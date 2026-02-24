@@ -109,7 +109,7 @@ def main(page: Page):
                             Container(content=status_message, alignment=Alignment(0, 0), width=360),
                             Container(height=10),
 
-                            #on_click=handle_login
+                            # Adăugăm on_click=handle_login
                             Container(
                                 content=ElevatedButton(
                                     content=Text("Autentificare", color='white', weight=FontWeight.W_700, size=16),
