@@ -466,8 +466,17 @@ def main(page: Page):
 
             # 5. PROCESEAZĂ RĂSPUNS
             if result["success"]:
-                state.show_success("Cont creat cu succes! Te poți autentifica.")
-                # TODO: Redirecționează la login
+                page.update()
+
+                # Așteptă 2 secunde, apoi redirect la login
+                # (Pentru a se vedea mesajul de succes)
+                import time
+                time.sleep(2)
+
+                # Redirectionează la Login
+                page.clean()
+                page.add(build_login_page())
+                page.update()
             else:
                 state.show_error(result["message"])
 
