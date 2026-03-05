@@ -9,9 +9,10 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
 
     # ── State ──────────────────────────────────────────────────────────────────
     is_expanded = [False]
+    menu_open   = [False]
 
-    COLLAPSED_HEIGHT = 520   # inaltimea normala a cardului
-    EXPANDED_HEIGHT  = 676   # cat ocupa tot ecranul (740 - 64 nav)
+    COLLAPSED_HEIGHT = 570
+    EXPANDED_HEIGHT  = 676
 
     def go_add_plant(e):
         page.clean(); page.add(build_add_plant_page()); page.update()
@@ -19,18 +20,13 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
     def go_plants(e):
         page.clean(); page.add(build_plants_list_page()); page.update()
 
-    # ── Nav button ─────────────────────────────────────────────────────────────
+    # ── NAV BUTTON (bottom) ────────────────────────────────────────────────────
     def nav_btn(icon, label, active=False, on_click_fn=None):
-        c  = "white"     if active else "#dddddd"
-        bg = "#44ffffff" if active else "transparent"
+        c = "white" if active else "#99ffffff"
         col = Column(
-            horizontal_alignment=CrossAxisAlignment.CENTER, spacing=3,
+            horizontal_alignment=CrossAxisAlignment.CENTER, spacing=2,
             controls=[
-                Container(
-                    width=40, height=30, border_radius=10, bgcolor=bg,
-                    content=Icon(icon, size=18, color=c),
-                    alignment=Alignment.CENTER,
-                ),
+                Icon(icon, size=20, color=c),
                 Text(label, size=9, color=c,
                      weight=FontWeight.W_600 if active else FontWeight.W_400),
             ],
@@ -39,12 +35,12 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
             return GestureDetector(on_tap=on_click_fn, content=col)
         return col
 
-    # ── Bottom nav ─────────────────────────────────────────────────────────────
+    # ── BOTTOM NAV ─────────────────────────────────────────────────────────────
     bottom_nav = Container(
         height=64,
-        bgcolor="#88f5faf5",
-        blur=18,
-        border=border.only(top=BorderSide(1, "#33ffffff")),
+        bgcolor="#cc1a1a2e",
+        blur=20,
+        border=border.only(top=BorderSide(1, "#15ffffff")),
         padding=padding.symmetric(horizontal=32, vertical=8),
         content=Row(
             alignment=MainAxisAlignment.SPACE_AROUND,
@@ -57,9 +53,107 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
         ),
     )
 
+    # ── HAMBURGER MENU PANEL ───────────────────────────────────────────────────
+    def menu_item(icon, label, on_click_fn=None):
+        row = Container(
+            padding=padding.symmetric(horizontal=20, vertical=16),
+            border=border.only(bottom=BorderSide(1, "#08000000")),
+            ink=True,
+            on_click=on_click_fn,
+            content=Row(
+                spacing=16,
+                vertical_alignment=CrossAxisAlignment.CENTER,
+                controls=[
+                    Container(
+                        width=38, height=38, border_radius=12,
+                        bgcolor="#f5f7f5",
+                        alignment=Alignment.CENTER,
+                        content=Icon(icon, size=18, color="#2d5a3d"),
+                    ),
+                    Text(label, size=14, weight=FontWeight.W_500,
+                         color="#2c2c2c"),
+                ],
+            ),
+        )
+        return row
+
+    menu_panel = Container(
+        width=0,
+        animate=Animation(300, AnimationCurve.EASE_IN_OUT),
+        bgcolor="white",
+        border_radius=BorderRadius(0, 28, 0, 28),
+        shadow=BoxShadow(blur_radius=40, color="#33000000",
+                         offset=Offset(4, 0)),
+        clip_behavior=ClipBehavior.HARD_EDGE,
+        content=Container(
+            width=260,
+            padding=padding.only(top=56, bottom=20),
+            content=Column(
+                spacing=0,
+                controls=[
+                    # ── Menu header ───────────────────────────────────────
+                    Container(
+                        padding=padding.only(left=24, right=24, bottom=24),
+                        content=Column(
+                            spacing=6,
+                            controls=[
+                                Container(
+                                    width=48, height=48, border_radius=16,
+                                    bgcolor="#e8f0e8",
+                                    alignment=Alignment.CENTER,
+                                    content=Icon(Icons.PERSON_ROUNDED,
+                                                 size=24, color="#2d5a3d"),
+                                ),
+                                Text("Gradina mea", size=18,
+                                     weight=FontWeight.W_700, color="#1a1a1a"),
+                                Text("Bine ai revenit", size=12,
+                                     color="#999999"),
+                            ],
+                        ),
+                    ),
+                    Divider(height=1, color="#f0f0f0"),
+                    # ── Menu items ────────────────────────────────────────
+                    menu_item(Icons.PERSON_OUTLINE_ROUNDED,   "Profil"),
+                    menu_item(Icons.CALENDAR_MONTH_ROUNDED,   "Program udare"),
+                    menu_item(Icons.MENU_BOOK_ROUNDED,        "Jurnal gradina"),
+                    menu_item(Icons.NOTIFICATIONS_NONE_ROUNDED, "Notificari"),
+                    menu_item(Icons.SETTINGS_OUTLINED,        "Setari"),
+                    # ── Spacer + version ──────────────────────────────────
+                    Container(expand=True),
+                    Container(
+                        padding=padding.symmetric(horizontal=24, vertical=8),
+                        content=Text("ROA v1.0", size=10, color="#cccccc"),
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    # ── Overlay (tap to close) ─────────────────────────────────────────────────
+    menu_overlay = Container(
+        visible=False,
+        bgcolor="#44000000",
+        expand=True,
+        animate_opacity=Animation(200, AnimationCurve.EASE_IN_OUT),
+        opacity=0,
+        on_click=lambda e: toggle_menu(e),
+    )
+
+    def toggle_menu(e=None):
+        menu_open[0] = not menu_open[0]
+        if menu_open[0]:
+            menu_overlay.visible = True
+            menu_overlay.opacity = 1
+            menu_panel.width = 260
+        else:
+            menu_overlay.opacity = 0
+            menu_panel.width = 0
+            menu_overlay.visible = False
+        page.update()
+
     # ── TOP HERO ───────────────────────────────────────────────────────────────
     top_hero = Container(
-        height=220,
+        height=170,
         padding=padding.only(left=24, right=24, top=48, bottom=20),
         content=Column(
             spacing=0,
@@ -68,86 +162,93 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                     vertical_alignment=CrossAxisAlignment.START,
                     controls=[
-                        Column(spacing=4, controls=[
-                            Text("Gradina mea", size=13,
-                                 color="#ccffffff", weight=FontWeight.W_500),
-                            Text("Dashboard", size=28,
-                                 color="white", weight=FontWeight.W_800),
-                        ]),
+                        # ── Hamburger button (3 liniute) ──────────────────
+                        GestureDetector(
+                            on_tap=lambda e: toggle_menu(e),
+                            content=Container(
+                                width=40, height=40,
+                                border_radius=12,
+                                bgcolor="#33ffffff",
+                                alignment=Alignment.CENTER,
+                                content=Icon(Icons.MENU_ROUNDED,
+                                             size=20, color="white"),
+                            ),
+                        ),
+                        # ── Temp badge ────────────────────────────────────
                         Container(
                             padding=padding.symmetric(horizontal=12, vertical=8),
-                            bgcolor="#44ffffff",
+                            bgcolor="#33ffffff",
                             border_radius=14,
-                            border=border.all(1, "#55ffffff"),
+                            border=border.all(1, "#22ffffff"),
                             content=Row(
                                 spacing=5,
                                 vertical_alignment=CrossAxisAlignment.CENTER,
                                 controls=[
-                                    Icon(Icons.WB_SUNNY_ROUNDED, color=AMBER_W, size=16),
+                                    Icon(Icons.WB_SUNNY_ROUNDED,
+                                         color="#f5c842", size=16),
                                     Text(f"{SOLAR_TEMP}°C", size=15,
-                                         weight=FontWeight.W_700, color="white"),
+                                         weight=FontWeight.W_700,
+                                         color="white"),
                                 ],
                             ),
                         ),
                     ],
                 ),
+                Container(height=12),
+                Text("Buna ziua !", size=28,
+                     color="white", weight=FontWeight.W_800),
             ],
         ),
     )
 
-    # ── PLANT ROW ──────────────────────────────────────────────────────────────
+    # ── PLANT ROW (minimal) ────────────────────────────────────────────────────
     def plant_row(plant: dict) -> Container:
         hum   = plant["humidity"]
         color = hum_color(hum)
-        needs = hum < plant["hum_threshold"]
+
+        bar_width = 80
+
         return Container(
-            padding=padding.symmetric(horizontal=20, vertical=14),
-            border=border.only(bottom=BorderSide(1, "#11000000")),
+            padding=padding.symmetric(horizontal=20, vertical=16),
+            border=border.only(bottom=BorderSide(1, "#06000000")),
             content=Row(
                 alignment=MainAxisAlignment.SPACE_BETWEEN,
                 vertical_alignment=CrossAxisAlignment.CENTER,
                 controls=[
+                    # ── Left: emoji + name ────────────────────────────────
                     Row(
                         spacing=14,
                         vertical_alignment=CrossAxisAlignment.CENTER,
                         controls=[
                             Container(
-                                width=46, height=46,
+                                width=44, height=44,
                                 border_radius=14,
-                                bgcolor="#f0f7f0",
+                                bgcolor="#f5f7f5",
                                 alignment=Alignment.CENTER,
-                                content=Text(plant["emoji"], size=24),
+                                content=Text(plant["emoji"], size=22),
                             ),
-                            Column(spacing=3, controls=[
-                                Text(plant["name"], size=15,
-                                     weight=FontWeight.W_700, color=TEXT_DARK),
-                                Text("umiditate sol", size=12, color=TEXT_SUB),
-                            ]),
+                            Text(plant["name"], size=15,
+                                 weight=FontWeight.W_600, color="#2c2c2c"),
                         ],
                     ),
+                    # ── Right: minimal bar + percent ──────────────────────
                     Row(
                         spacing=10,
                         vertical_alignment=CrossAxisAlignment.CENTER,
                         controls=[
                             Container(
-                                visible=needs,
-                                padding=padding.symmetric(horizontal=7, vertical=3),
-                                bgcolor="#fff3f3",
-                                border_radius=20,
-                                border=border.all(1, "#ffcccc"),
-                                content=Text("⚠", size=10, color="#cc0000"),
-                            ),
-                            Stack(alignment=Alignment.CENTER, controls=[
-                                ProgressRing(
-                                    width=44, height=44,
-                                    value=hum / 100,
-                                    color=color,
-                                    bgcolor="#18000000",
-                                    stroke_width=4,
+                                width=bar_width, height=5,
+                                border_radius=3,
+                                bgcolor="#eeeeee",
+                                content=Container(
+                                    width=bar_width * hum / 100,
+                                    height=5,
+                                    border_radius=3,
+                                    bgcolor=color,
                                 ),
-                                Text(f"{hum}%", size=10,
-                                     weight=FontWeight.W_700, color=TEXT_DARK),
-                            ]),
+                            ),
+                            Text(f"{hum}%", size=12,
+                                 weight=FontWeight.W_600, color="#555555"),
                         ],
                     ),
                 ],
@@ -159,63 +260,57 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
     avg_color = hum_color(avg_hum)
 
     avg_footer = Container(
-        bgcolor="#f5faf5",
-        padding=padding.symmetric(horizontal=20, vertical=10),
+        bgcolor="#fafcfa",
+        padding=padding.symmetric(horizontal=20, vertical=12),
         content=Row(
             alignment=MainAxisAlignment.SPACE_BETWEEN,
             vertical_alignment=CrossAxisAlignment.CENTER,
             controls=[
-                Row(spacing=8, vertical_alignment=CrossAxisAlignment.CENTER, controls=[
-                    Icon(Icons.WATER_DROP_OUTLINED, size=14, color=ACCENT_GREEN),
-                    Column(spacing=0, controls=[
-                        Text("Medie globală", size=11,
-                             color=TEXT_SUB, weight=FontWeight.W_500),
-                        Text(f"{len(user_plants)} plante",
-                             size=10, color="#bbbbbb"),
-                    ]),
+                Row(spacing=8, vertical_alignment=CrossAxisAlignment.CENTER,
+                    controls=[
+                    Icon(Icons.WATER_DROP_OUTLINED, size=14, color="#88aaaaaa"),
+                    Text("Medie", size=12, color="#aaaaaa",
+                         weight=FontWeight.W_500),
                 ]),
-                Row(spacing=8, vertical_alignment=CrossAxisAlignment.CENTER, controls=[
+                Row(spacing=8, vertical_alignment=CrossAxisAlignment.CENTER,
+                    controls=[
                     Container(
-                        width=90, height=6,
-                        border_radius=4,
-                        bgcolor="#e8e8e8",
+                        width=70, height=5, border_radius=3, bgcolor="#eeeeee",
                         content=Container(
-                            width=90 * avg_hum / 100,
-                            height=6,
-                            border_radius=4,
-                            bgcolor=avg_color,
+                            width=70 * avg_hum / 100, height=5,
+                            border_radius=3, bgcolor=avg_color,
                         ),
                     ),
                     Text(f"{avg_hum}%", size=12,
-                         weight=FontWeight.W_700, color=TEXT_DARK),
+                         weight=FontWeight.W_600, color="#555555"),
                 ]),
             ],
         ),
     )
 
-    # ── AI ADVICE (vizibil doar expanded) ──────────────────────────────────────
+    # ── AI ADVICE (visible only when expanded) ─────────────────────────────────
     a_hum = user_plants[0]["humidity"] if user_plants else 60
     b_hum = user_plants[1]["humidity"] if len(user_plants) > 1 else 60
     advice_text = advice_engine(SOLAR_TEMP, AVG_HUMIDITY, a_hum, b_hum)
 
     ai_advice = Container(
-        bgcolor="#f0f7f0",
-        border_radius=BorderRadius(0, 0, 0, 0),
+        bgcolor="#f7faf7",
         padding=padding.symmetric(horizontal=20, vertical=14),
         content=Row(
             spacing=12,
             vertical_alignment=CrossAxisAlignment.START,
             controls=[
                 Container(
-                    width=32, height=32, border_radius=10,
-                    bgcolor="#e0f0e0",
-                    content=Icon(Icons.AUTO_AWESOME_ROUNDED, size=15, color=ACCENT_GREEN),
+                    width=30, height=30, border_radius=10,
+                    bgcolor="#edf3ed",
+                    content=Icon(Icons.AUTO_AWESOME_ROUNDED,
+                                 size=14, color="#5a8a6a"),
                     alignment=Alignment.CENTER,
                 ),
-                Column(spacing=3, expand=True, controls=[
-                    Text("Sfat AI", size=12,
-                         weight=FontWeight.W_700, color=TEXT_DARK),
-                    Text(advice_text, size=11, color=TEXT_SUB),
+                Column(spacing=2, expand=True, controls=[
+                    Text("Sfat AI", size=11,
+                         weight=FontWeight.W_700, color="#3a3a3a"),
+                    Text(advice_text, size=11, color="#888888"),
                 ]),
             ],
         ),
@@ -227,40 +322,38 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
         plant_rows = [Container(
             padding=padding.all(24),
             content=Text("Nu ai plante adaugate inca.",
-                         color=TEXT_SUB, size=14,
+                         color="#aaaaaa", size=14,
                          text_align=TextAlign.CENTER),
         )]
 
-    # Handle indicator (arrow schimba directia)
     handle_icon = Icon(Icons.KEYBOARD_ARROW_UP_ROUNDED,
-                       size=20, color="#aaaaaa")
+                       size=18, color="#bbbbbb")
 
-    # Card container animat
     card = Container(
         height=COLLAPSED_HEIGHT,
         animate=Animation(350, AnimationCurve.EASE_IN_OUT),
         bgcolor="white",
         border_radius=BorderRadius(top_left=32, top_right=32,
                                    bottom_left=0, bottom_right=0),
-        shadow=BoxShadow(blur_radius=30, color="#22000000",
+        shadow=BoxShadow(blur_radius=30, color="#18000000",
                          offset=Offset(0, -4)),
         content=Column(
             spacing=0,
             expand=True,
             controls=[
-                # ── Handle tap ────────────────────────────────────────────────
+                # ── Handle ────────────────────────────────────────────────
                 GestureDetector(
                     on_tap=lambda e: toggle_card(e),
                     content=Container(
-                        padding=padding.only(top=12, bottom=8),
+                        padding=padding.only(top=12, bottom=6),
                         alignment=Alignment.CENTER,
                         content=Column(
                             horizontal_alignment=CrossAxisAlignment.CENTER,
                             spacing=4,
                             controls=[
                                 Container(
-                                    width=36, height=4,
-                                    bgcolor="#dddddd",
+                                    width=32, height=4,
+                                    bgcolor="#e0e0e0",
                                     border_radius=4,
                                 ),
                                 handle_icon,
@@ -268,7 +361,7 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
                         ),
                     ),
                 ),
-                # ── Header ────────────────────────────────────────────────────
+                # ── Header ────────────────────────────────────────────────
                 Container(
                     padding=padding.symmetric(horizontal=20, vertical=8),
                     content=Row(
@@ -276,35 +369,35 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
                         vertical_alignment=CrossAxisAlignment.CENTER,
                         controls=[
                             Text("Plantele mele", size=17,
-                                 weight=FontWeight.W_800, color=TEXT_DARK),
+                                 weight=FontWeight.W_800, color="#1a1a1a"),
                             GestureDetector(
                                 on_tap=go_plants,
                                 content=Container(
-                                    padding=padding.symmetric(horizontal=12, vertical=6),
-                                    bgcolor="#f0f7f0",
+                                    padding=padding.symmetric(
+                                        horizontal=12, vertical=6),
+                                    bgcolor="#f5f7f5",
                                     border_radius=20,
                                     content=Text("Vezi toate", size=11,
-                                                 color=ACCENT_GREEN,
+                                                 color="#5a8a6a",
                                                  weight=FontWeight.W_600),
                                 ),
                             ),
                         ],
                     ),
                 ),
-                # ── Lista ─────────────────────────────────────────────────────
+                # ── Plant list ────────────────────────────────────────────
                 Container(
                     expand=True,
                     content=ListView(expand=True, controls=plant_rows),
                 ),
-                Divider(height=1, color="#eeeeee"),
+                Divider(height=1, color="#f0f0f0"),
                 avg_footer,
-                # AI advice - vizibil doar cand e expandat
                 ai_advice,
             ],
         ),
     )
 
-    # ── TOGGLE LOGIC ───────────────────────────────────────────────────────────
+    # ── TOGGLE CARD ────────────────────────────────────────────────────────────
     def toggle_card(e=None):
         is_expanded[0] = not is_expanded[0]
         if is_expanded[0]:
@@ -315,26 +408,20 @@ def build_dashboard_page(page, user_plants, build_add_plant_page, build_plants_l
             handle_icon.name = Icons.KEYBOARD_ARROW_UP_ROUNDED
         page.update()
 
-    # ── GRADIENT OVERLAY ───────────────────────────────────────────────────────
-    gradient_overlay = Container(
+    # ── MAIN LAYOUT (no gradient overlay) ──────────────────────────────────────
+    main_content = Column(
+        spacing=0,
         expand=True,
-        gradient=LinearGradient(
-            begin=Alignment(0, -1),
-            end=Alignment(0, 1),
-            colors=["#aa00573F", "#4400573F", "#0000573F"],
-            stops=[0.0, 0.35, 0.65],
-        ),
+        controls=[top_hero, card],
     )
 
+    # ── Stack: content + overlay + menu panel ──────────────────────────────────
     main_stack = Stack(
         expand=True,
         controls=[
-            gradient_overlay,
-            Column(
-                spacing=0,
-                expand=True,
-                controls=[top_hero, card],
-            ),
+            main_content,
+            menu_overlay,
+            menu_panel,
         ],
     )
 

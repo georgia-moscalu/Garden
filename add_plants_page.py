@@ -114,7 +114,7 @@ def build_add_plant_page(page, user_plants, build_dashboard_page):
             Container(height=4),
             Text("Adauga planta noua", size=26,
                  weight=FontWeight.W_800, color=PRIMARY_GREEN),
-            Text("Scrie primele litere si selecteaza",
+            Text("",
                  color=TEXT_LIGHT, size=13),
             Container(height=22),
             Container(
