@@ -67,8 +67,6 @@ def build_add_plant_page(page, user_plants, build_dashboard_page):
         page.update()
 
     search_field = TextField(
-        hint_text="Cauta planta (ex: R → Rosii, Ridichi...)",
-        hint_style=TextStyle(color="#aaaaaa", size=13),
         border=InputBorder.UNDERLINE,
         border_color="#992d5016",
         focused_border_color=ACCENT_GREEN,
